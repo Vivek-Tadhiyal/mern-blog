@@ -19,7 +19,10 @@ app.use(express.json());
 app.use(cookieParser());
 app.use('/uploads', express.static(__dirname + '/uploads'));
 
-mongoose.connect("mongodb+srv://apputadhiyal:3jlK1UnQst2vyQYd@cluster0.dhiv7a5.mongodb.net/blogApp")
+const dotenv = require('dotenv');
+dotenv.config();
+
+mongoose.connect(process.env.MONGO_URL);
 
 app.post('/register', async (req, res)=>{
     const {username, password} = req.body;
@@ -38,6 +41,11 @@ app.post('/register', async (req, res)=>{
 app.post("/login", async (req, res) => {
     const {username, password} = req.body;
     const userDoc = await User.findOne({username});
+
+    if (!userDoc) {
+        return res.status(400).json('Wrong Credentials');
+    }
+
     const passOk = bcrypt.compareSync(password, userDoc.password);
     if(passOk){
         //logged in
